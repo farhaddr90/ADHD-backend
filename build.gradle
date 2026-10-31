@@ -1,0 +1,33 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.json:json:20240303'
+    implementation 'org.xerial:sqlite-jdbc:3.46.1.3'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+}
+
+application {
+    mainClass = 'com.apklama.plus.Main'
+}
+
+// One jar with everything inside: copy it to the server and run `java -jar`
+tasks.register('serverJar', Jar) {
+    group = 'build'
+    archiveFileName = 'plus-server.jar'
+    manifest { attributes 'Main-Class': application.mainClass }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from sourceSets.main.output
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+}
